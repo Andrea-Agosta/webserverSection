@@ -1,43 +1,45 @@
-const http = require("http");
-const fs = require("fs");
+const express = require("express");
+const app = express();
+const db = [
+  {
+    id: 1,
+    name: "Marcus Dev",
+    email: "marcus@salt.dev",
+  },
+];
 
-const server = http.createServer((req, res) => {
-  console.log(`The URL for the request was '${req.url}'`);
-  console.log(`The Method for the request was '${req.method}'`);
+app.use(express.json());
 
-  const fileName = fileNameOfUrl(req.url);
-  if (fileName === "favicon.ico") {
-    res.statusCode = 404;
-    res.end("");
-    return;
-  }
-  const content = getFileContentOr404(fileName);
-
-  res.statusCode = 200;
-  res.setHeader("Content-Type", "text/html");
-  res.end(content);
+app.get("/", (req, res) => {
+  res.status(201).setHeader("location", `/api/developers/1`).json(db[0]);
 });
 
-const fileNameOfUrl = (url) => {
-  let fileName = "";
-  if (url.split("/")[1] === "") {
-    fileName = "index.html";
-  } else {
-    fileName = url.split("/")[1];
-  }
-  return fileName;
-};
+app.get("/api/developers/:id", (req, res) => {
+  const dev = db.find((dev) => dev.id == req.params.id);
+  return dev ? res.json(dev) : res.status(404).end();
+});
 
-const getFileContentOr404 = (fileName) => {
-  if (!fs.existsSync(`./static/${fileName}`)) {
-    fileName = "404.html";
-  }
-  return fs.readFileSync(`./static/${fileName}`, "utf-8");
-};
+app.post("/api/developers/", (req, res) => {
+  const newDeveloper = {
+    id: db.length + 1,
+    name: req.body.name,
+    email: req.body.email,
+  };
 
-const hostname = "localhost";
+  db.push(newDeveloper);
+
+  res
+    .status(201)
+    .setHeader("location", `/api/developers/${newDeveloper.id}`)
+    .json(newDeveloper);
+});
+
+app.delete("/api/developers/:id", (req, res) => {
+  const filter = db.filter((data) => data.id != req.params.id);
+  res.status(204).send("No content");
+});
+
 const port = 3000;
-
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}/`);
 });
