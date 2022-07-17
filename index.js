@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const db = [
+let db = [
   {
     id: 1,
     name: "Marcus Dev",
@@ -15,8 +15,12 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api/developers/:id", (req, res) => {
-  const dev = db.find((dev) => dev.id == req.params.id);
-  return dev ? res.json(dev) : res.status(404).end();
+  if (!idExistInDb(req.params.id)) {
+    res.status(404).send("Not Found");
+  } else {
+    const dev = getUserById(req.params.id);
+    return dev ? res.json(dev) : res.status(404).end();
+  }
 });
 
 app.post("/api/developers/", (req, res) => {
@@ -35,9 +39,43 @@ app.post("/api/developers/", (req, res) => {
 });
 
 app.delete("/api/developers/:id", (req, res) => {
-  const filter = db.filter((data) => data.id != req.params.id);
-  res.status(204).send("No content");
+  if (!idExistInDb(req.params.id)) {
+    res.status(404).send("Not Found");
+  } else {
+    db = db.filter((data) => {
+      data.id !== req.params.id;
+    });
+    res.status(204).send("No content");
+  }
 });
+
+app.patch("/api/developers/:id", (req, res) => {
+  if (!idExistInDb(req.params.id)) {
+    res.status(404).send("Not Found");
+  } else {
+    const name = req.body.name;
+    const email = req.body.email;
+    if (
+      (name !== undefined && name !== null) ||
+      (email !== undefined && email !== null)
+    ) {
+      let usr = getUserById(req.params.id);
+      if (name !== undefined && name !== null) usr.name = name;
+      if (email !== undefined && email !== null) usr.email = email;
+    } else {
+      res.status(400).send("Bad request");
+    }
+  }
+});
+
+function getUserById(id) {
+  return db.find((dev) => dev.id == id);
+}
+
+function idExistInDb(id) {
+  const dev = getUserById(id);
+  return dev ? true : false;
+}
 
 const port = 3000;
 app.listen(port, () => {
