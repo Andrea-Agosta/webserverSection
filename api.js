@@ -6,12 +6,21 @@ let db = [
     name: "Marcus Dev",
     email: "marcus@salt.dev",
   },
+  {
+    id: 2,
+    name: "Beatrice Dev",
+    email: "bea@salt.dev",
+  },
 ];
 
 app.use(express.json());
 
 app.get("/", (req, res) => {
   res.status(201).setHeader("location", `/api/developers/1`).json(db[0]);
+});
+
+app.get("/api/developers/", (req, res) => {
+  res.json(db);
 });
 
 app.get("/api/developers/:id", (req, res) => {
@@ -42,9 +51,7 @@ app.delete("/api/developers/:id", (req, res) => {
   if (!idExistInDb(req.params.id)) {
     res.status(404).send("Not Found");
   } else {
-    db = db.filter((data) => {
-      data.id !== req.params.id;
-    });
+    db = db.filter((data) => data.id != req.params.id);
     res.status(204).send("No content");
   }
 });
@@ -62,6 +69,7 @@ app.patch("/api/developers/:id", (req, res) => {
       let usr = getUserById(req.params.id);
       if (name !== undefined && name !== null) usr.name = name;
       if (email !== undefined && email !== null) usr.email = email;
+      res.status(200).json(usr);
     } else {
       res.status(400).send("Bad request");
     }
@@ -77,7 +85,6 @@ function idExistInDb(id) {
   return dev ? true : false;
 }
 
-const port = 3000;
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}/`);
-});
+module.exports = {
+  app,
+};
