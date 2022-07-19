@@ -64,13 +64,6 @@ describe("developer API should have endpoints to", () => {
       .expect(200, done);
   });
 
-  /* 
-  
-            UPDATE THE FILTER OF DELETE FUNCTION 
-            AT THE MOMENT THE FUNCTION DELEATE ALL THE DATA
-  
-  */
-
   it("delete the developer with id 2", function (done) {
     //arrange
     const api = require("./api.js");
